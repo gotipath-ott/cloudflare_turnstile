@@ -337,7 +337,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
             }
             final allowedHosts = RegExp(
               'localhost|'
-              '${RegExp.escape(widget.baseUrl)}|'
+              '${RegExp.escape(req.host)}|'
               r'challenges\.cloudflare\.com|'
               'about:blank|'
               'about:srcdoc',
