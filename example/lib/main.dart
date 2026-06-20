@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,20 +49,24 @@ class _MyAppState extends State<MyApp> {
                         : const CircularProgressIndicator(),
                   ),
                   const SizedBox(height: 48.0),
-                  CloudFlareTurnstile(
-                    siteKey: '3x00000000000000000000FF',
-                    mode: TurnstileMode.managed,
-                    options: _options,
-                    controller: _controller,
-                    onTokenRecived: (token) {
-                      setState(() {
-                        _token = token;
-                      });
-                    },
-                    onTokenExpired: () {},
-                    errorBuilder: (context, error) {
-                      return Text(error.message);
-                    },
+                  AnimatedSize(
+                    duration: Durations.medium1,
+                    alignment: Alignment.topCenter,
+                    child: CloudFlareTurnstile(
+                      siteKey: '3x00000000000000000000FF',
+                      mode: TurnstileMode.managed,
+                      options: _options,
+                      controller: _controller,
+                      onTokenRecived: (token) {
+                        setState(() {
+                          _token = token;
+                        });
+                      },
+                      onTokenExpired: () {},
+                      errorBuilder: (context, error) {
+                        return Text(error.message);
+                      },
+                    ),
                   ),
                   const SizedBox(height: 48.0),
                   Row(

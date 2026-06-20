@@ -517,10 +517,8 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
       }
     }
 
-    if (!_isWidgetInteractive) {
-      return SizedBox.shrink(
-        child: _view,
-      );
+    if (!_isWidgetInteractive || !_isWidgetReady) {
+      return SizedBox.shrink(child: _view);
     }
 
     return SizedBox(
@@ -537,10 +535,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
             alignment: Alignment.topCenter,
             maxWidth: constraints.maxWidth + offset.dx,
             maxHeight: widget.options.size.height + offset.dy,
-            child: Opacity(
-              opacity: _isWidgetReady ? 1.0 : 0.0,
-              child: _view,
-            ),
+            child: _view,
           );
         },
       ),
