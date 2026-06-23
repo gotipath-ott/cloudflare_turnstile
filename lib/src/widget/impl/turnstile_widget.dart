@@ -9,7 +9,7 @@ import 'package:cloudflare_turnstile/src/turnstile_exception.dart';
 import 'package:cloudflare_turnstile/src/widget/interface.dart' as i;
 import 'package:cloudflare_turnstile/src/widget/turnstile_options.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -321,32 +321,11 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
             }
           },
           onNavigationRequest: (request) async {
-            var req = Uri.tryParse(request.url);
-
-            final isCfOrigin = req?.host.contains('cloudflare.com') ?? false;
-            final isTermsPath = req?.path.contains('website-terms') ?? false;
-            final isPrivacyPath = req?.path.contains('privacypolicy') ?? false;
-
-            if (req != null && isCfOrigin && (isTermsPath || isPrivacyPath)) {
-              await launchUrl(req, mode: LaunchMode.externalApplication);
-              return NavigationDecision.prevent;
-            }
-
-            if (req == null || req.host.isEmpty) {
-              req = Uri.parse('about:srcdoc');
-            }
-            final allowedHosts = RegExp(
-              'localhost|'
-              '${RegExp.escape(widget.baseUrl)}|'
-              r'challenges\.cloudflare\.com|'
-              'about:blank|'
-              'about:srcdoc',
-            );
-
-            if (allowedHosts.hasMatch(req.host)) {
+            if (isAllowedUrl(request.url)) {
               return NavigationDecision.navigate;
             }
 
+            unawaited(launchUrlString(request.url));
             return NavigationDecision.prevent;
           },
           onHttpAuthRequest: (_) => NavigationDecision.prevent,
@@ -384,6 +363,24 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
       data,
       baseUrl: widget.baseUrl,
     );
+  }
+
+  bool isAllowedUrl(String url) {
+    final host = Uri.parse(widget.baseUrl).host;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return false;
+
+    // Block Cloudflare help page
+    if (uri.host == 'challenges.cloudflare.com' &&
+        uri.path == '/cdn-cgi/challenge-platform/help') {
+      return false;
+    }
+
+    return uri.host == host ||
+        uri.host == 'localhost' ||
+        uri.host == 'challenges.cloudflare.com' ||
+        url == 'about:blank' ||
+        url == 'about:srcdoc';
   }
 
   FutureOr<void> _getWidgetDimension() async {
@@ -517,10 +514,8 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
       }
     }
 
-    if (!_isWidgetInteractive) {
-      return SizedBox.shrink(
-        child: _view,
-      );
+    if (!_isWidgetInteractive || !_isWidgetReady) {
+      return SizedBox.shrink(child: _view);
     }
 
     return SizedBox(
@@ -537,10 +532,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
             alignment: Alignment.topCenter,
             maxWidth: constraints.maxWidth + offset.dx,
             maxHeight: widget.options.size.height + offset.dy,
-            child: Opacity(
-              opacity: _isWidgetReady ? 1.0 : 0.0,
-              child: _view,
-            ),
+            child: _view,
           );
         },
       ),
