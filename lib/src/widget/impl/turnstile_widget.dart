@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
-import 'dart:io';
 
 import 'package:cloudflare_turnstile/src/controller/impl/turnstile_controller.dart';
 import 'package:cloudflare_turnstile/src/html_data.dart';
@@ -241,17 +240,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
       params = AndroidWebViewControllerCreationParams();
     }
 
-    final controller = WebViewController.fromPlatformCreationParams(params);
-
-    // Enable HybridComposition
-    if (Platform.isAndroid) {
-      AndroidWebViewWidgetCreationParams(
-        displayWithHybridComposition: true,
-        controller: controller.platform,
-      );
-    }
-
-    controller
+    final controller = WebViewController.fromPlatformCreationParams(params)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..setOnConsoleMessage((mes) {
@@ -349,9 +338,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(false);
       (controller.platform as AndroidWebViewController)
-          .setOnPlatformPermissionRequest(
-        (request) => request.deny(),
-      );
+          .setOnPlatformPermissionRequest((request) => request.deny());
     }
 
     _controller = controller;
@@ -360,10 +347,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
 
     _createChannels();
 
-    _controller.loadHtmlString(
-      data,
-      baseUrl: widget.baseUrl,
-    );
+    _controller.loadHtmlString(data, baseUrl: widget.baseUrl);
   }
 
   bool isAllowedUrl(String url) {
@@ -397,10 +381,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
 
     final jsonData = result.toString();
 
-    final jsonWithoutOuterQuotes = jsonData.replaceAll(
-      jsonFormatRegex,
-      '',
-    );
+    final jsonWithoutOuterQuotes = jsonData.replaceAll(jsonFormatRegex, '');
 
     final size = jsonDecode(jsonWithoutOuterQuotes) as Map<String, dynamic>?;
     if (size == null) return;
@@ -491,9 +472,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
     return Offset(dx, dy);
   }
 
-  late final Widget _view = WebViewWidget(
-    controller: _controller,
-  );
+  late final Widget _view = WebViewWidget(controller: _controller);
 
   @override
   void dispose() {
