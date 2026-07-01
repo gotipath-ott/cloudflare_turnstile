@@ -307,6 +307,7 @@ class _CloudFlareTurnstileState extends State<CloudFlareTurnstile> {
           },
           onPageStarted: (_) => _resetWidget(),
           onWebResourceError: (error) {
+            if (error.isForMainFrame != true) return;
             if (error.errorType == WebResourceErrorType.hostLookup && mounted) {
               setState(() {
                 _hasError = const TurnstileException(
